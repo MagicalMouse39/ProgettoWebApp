@@ -1,0 +1,164 @@
+<header class="navbar">
+  <div class="navbar-inner">
+    <div class="logo">
+      <span class="logo-icon">🐴</span>
+      <span class="logo-text">HorseCare</span>
+    </div>
+    
+    <nav class="nav-links desktop-only">
+      <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+      <a routerLink="/horses" routerLinkActive="active">I Miei Cavalli</a>
+      <a routerLink="/calendar" routerLinkActive="active">Calendario</a>
+    </nav>
+
+    <div class="user-profile">
+      <div class="avatar">U</div>
+    </div>
+  </div>
+</header>
+
+<main class="page-content">
+  <div class="container">
+    <router-outlet></router-outlet>
+  </div>
+</main>
+
+<!-- Bottom Navigation for Mobile -->
+<nav class="mobile-nav mobile-only">
+  <a routerLink="/dashboard" routerLinkActive="active">
+    <span class="nav-icon">📊</span>
+    <span class="nav-text">Home</span>
+  </a>
+  <a routerLink="/horses" routerLinkActive="active">
+    <span class="nav-icon">🐎</span>
+    <span class="nav-text">Cavalli</span>
+  </a>
+  <a routerLink="/calendar" routerLinkActive="active">
+    <span class="nav-icon">📅</span>
+    <span class="nav-text">Agenda</span>
+  </a>
+</nav>
+
+<style>
+  .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 0;
+  }
+
+  .navbar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .nav-links a:hover {
+    color: var(--primary);
+    background: rgba(45, 90, 39, 0.05);
+  }
+
+  .nav-links a.active {
+    color: var(--primary);
+    background: rgba(45, 90, 39, 0.08);
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+  }
+
+  .page-content {
+    padding-top: 1.5rem;
+    padding-bottom: 5rem; /* Padding for mobile bottom nav */
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  /* Mobile Bottom Nav Styles */
+  .mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+    z-index: 1001;
+  }
+
+  .mobile-nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .mobile-nav a.active {
+    color: var(--primary);
+  }
+
+  .nav-icon {
+    font-size: 1.25rem;
+    margin-bottom: 2px;
+  }
+
+  .desktop-only { display: flex; }
+  .mobile-only { display: none; }
+
+  @media (max-width: 768px) {
+    .desktop-only { display: none; }
+    .mobile-only { display: flex; }
+    .logo-text { font-size: 1.1rem; }
+  }
+</style>
