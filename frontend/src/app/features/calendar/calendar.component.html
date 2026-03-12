@@ -1,0 +1,23 @@
+<div class="calendar-page">
+  <header class="page-header">
+    <div class="header-content">
+      <h1>Calendario Attività</h1>
+      <p>Pianifica e tieni traccia di ogni dettaglio per i tuoi cavalli.</p>
+    </div>
+    <div class="calendar-actions">
+      <button class="btn-secondary">Filtra per Cavallo</button>
+      <button class="btn-primary" (click)="newEvent()">+ Nuova Scadenza</button>
+    </div>
+  </header>
+  
+  <div class="calendar-glass-card">
+    <full-calendar [options]="calendarOptions"></full-calendar>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="dot" style="background: #3E2723"></span> Ferratura</div>
+    <div class="legend-item"><span class="dot" style="background: #1976D2"></span> Vaccino</div>
+    <div class="legend-item"><span class="dot" style="background: #388E3C"></span> Sverminamento</div>
+    <div class="legend-item"><span class="dot" style="background: #FBC02D"></span> Dentista</div>
+  </div>
+</div>

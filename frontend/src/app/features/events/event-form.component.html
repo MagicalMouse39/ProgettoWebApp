@@ -1,0 +1,66 @@
+<div class="event-form-page">
+  <div class="form-card">
+    <header class="form-header">
+      <h1>{{ isEditing ? 'Modifica Evento' : 'Nuovo Evento' }}</h1>
+      <p>Pianifica una nuova attività per i tuoi cavalli.</p>
+    </header>
+
+    <form (ngSubmit)="saveEvent()" #eventForm="ngForm">
+      
+      <div class="form-group">
+        <label>Cavallo *</label>
+        <select [(ngModel)]="currentEvent.horse_id" name="horse_id" required>
+          @for (horse of (horses$ | async); track horse.id) {
+            <option [value]="horse.id">{{ horse.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Tipo di Attività *</label>
+        <div class="type-grid">
+          @for (type of (eventTypes$ | async); track type.id) {
+            <div 
+              class="type-option" 
+              [class.selected]="currentEvent.type_id === type.id"
+              [style.--type-color]="type.color_hex"
+              (click)="selectType(type.id)"
+            >
+              <div class="color-dot"></div>
+              <span>{{ type.name }}</span>
+            </div>
+          }
+        </div>
+        <input type="hidden" [(ngModel)]="currentEvent.type_id" name="type_id" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Data Programmata *</label>
+          <input type="date" [(ngModel)]="currentEvent.scheduled_date" name="scheduled_date" required>
+        </div>
+        <div class="form-group">
+          <label>Stato</label>
+          <select [(ngModel)]="currentEvent.status" name="status">
+            <option value="scheduled">In Programma</option>
+            <option value="completed">Completato</option>
+            <option value="cancelled">Annullato</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Note Aggiuntive</label>
+        <textarea [(ngModel)]="currentEvent.notes" name="notes" rows="4" placeholder="Dettagli, costi, osservazioni..."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-text" (click)="cancel()">Annulla</button>
+        <button type="submit" class="btn-primary" [disabled]="!eventForm.valid">
+          {{ isEditing ? 'Salva Modifiche' : 'Crea Evento' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
