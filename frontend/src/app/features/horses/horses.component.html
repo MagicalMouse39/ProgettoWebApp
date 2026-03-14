@@ -1,0 +1,101 @@
+<div class="horses-page">
+  <header class="page-header">
+    <div class="header-content">
+      <h1>I Miei Cavalli</h1>
+      <p>Gestisci l'anagrafica e i dettagli della tua scuderia.</p>
+    </div>
+    <button class="btn-primary" (click)="openModal()">+ Aggiungi Cavallo</button>
+  </header>
+
+  @if (horses$ | async; as horseList) {
+    @if (horseList.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">🐎</div>
+        <h2>La tua scuderia è vuota</h2>
+        <p>Inizia aggiungendo il tuo primo cavallo.</p>
+        <button class="btn-primary" (click)="openModal()">Aggiungi ora</button>
+      </div>
+    }
+
+    <div class="horse-grid">
+      @for (horse of horseList; track horse.id) {
+      <div class="horse-card">
+        <div class="card-header">
+          <div class="avatar-circle">{{ horse.name.charAt(0) }}</div>
+          <div class="header-text">
+            <h3>{{ horse.name }}</h3>
+            <span class="breed-badge">{{ horse.breed || 'Sconosciuto' }}</span>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="info-row">
+            <span class="label">Microchip</span>
+            <span class="value">{{ horse.microchip || '-' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Sesso</span>
+            <span class="value capitalize">
+              {{ horse.gender === 'stallion' ? 'Stallone' : horse.gender === 'mare' ? 'Giumenta' : 'Castrone' }}
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="label">Nascita</span>
+            <span class="value">{{ (horse.birth_date | date:'dd/MM/yyyy') || '-' }}</span>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn-text text-danger" (click)="deleteHorse(horse)">Elimina</button>
+          <button class="btn-secondary-sm" (click)="editHorse(horse)">Modifica</button>
+        </div>
+      </div>
+      }
+    </div>
+  }
+</div>
+
+<dialog #horseDialog class="glass-modal">
+  <div class="modal-content">
+    <h2>{{ isEditing ? 'Modifica Cavallo' : 'Nuovo Cavallo' }}</h2>
+    
+    <form (ngSubmit)="saveHorse()" #horseForm="ngForm">
+      <div class="form-group">
+        <label>Nome Cavallo *</label>
+        <input type="text" [(ngModel)]="currentHorse.name" name="name" required placeholder="Es. Spirit">
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Razza</label>
+          <input type="text" [(ngModel)]="currentHorse.breed" name="breed" placeholder="Es. Arabo">
+        </div>
+        <div class="form-group">
+          <label>Sesso</label>
+          <select [(ngModel)]="currentHorse.gender" name="gender">
+            <option value="stallion">Stallone</option>
+            <option value="mare">Giumenta</option>
+            <option value="gelding">Castrone</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Data di Nascita</label>
+        <input type="date" [(ngModel)]="currentHorse.birth_date" name="birth_date">
+      </div>
+
+      <div class="form-group">
+        <label>Microchip</label>
+        <input type="text" [(ngModel)]="currentHorse.microchip" name="microchip" placeholder="Codice identificativo">
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-text" (click)="closeModal()">Annulla</button>
+        <button type="submit" class="btn-primary" [disabled]="!horseForm.valid">
+          {{ isEditing ? 'Salva Modifiche' : 'Aggiungi Cavallo' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</dialog>
