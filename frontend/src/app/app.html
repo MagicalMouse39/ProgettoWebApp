@@ -12,7 +12,19 @@
     </nav>
 
     <div class="user-profile">
-      <div class="avatar">U</div>
+      <div class="avatar" (click)="toggleDropdown()">U</div>
+      
+      <!-- Profile Dropdown -->
+      @if (isDropdownOpen) {
+        <div class="dropdown-menu">
+          <div class="dropdown-header">Mio Account</div>
+          <button class="dropdown-item" (click)="logout()">
+            <span class="item-icon">🚪</span> Esci
+          </button>
+        </div>
+        <!-- Overlay to close dropdown when clicking outside -->
+        <div class="dropdown-overlay" (click)="toggleDropdown()"></div>
+      }
     </div>
   </div>
 </header>
@@ -36,6 +48,10 @@
   <a routerLink="/calendar" routerLinkActive="active">
     <span class="nav-icon">📅</span>
     <span class="nav-text">Agenda</span>
+  </a>
+  <a href="javascript:void(0)" (click)="logout()">
+    <span class="nav-icon">🚪</span>
+    <span class="nav-text">Esci</span>
   </a>
 </nav>
 
@@ -94,6 +110,8 @@
     background: rgba(45, 90, 39, 0.08);
   }
 
+  .user-profile { position: relative; }
+
   .avatar {
     width: 36px;
     height: 36px;
@@ -104,6 +122,64 @@
     align-items: center;
     justify-content: center;
     font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .avatar:hover { transform: scale(1.05); }
+
+  /* Dropdown Styles */
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.75rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border: 1px solid var(--border);
+    width: 180px;
+    z-index: 1002;
+    overflow: hidden;
+    animation: slideDown 0.2s ease-out;
+  }
+
+  .dropdown-header {
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: #f8faf9;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dropdown-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #dc2626;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
+  }
+  .dropdown-item:hover { background: #fee2e2; }
+
+  .dropdown-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 1001;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .page-content {
