@@ -1,3 +1,4 @@
+@if (!router.url.endsWith('/login')) {
 <header class="navbar">
   <div class="navbar-inner">
     <div class="logo">
@@ -28,6 +29,7 @@
     </div>
   </div>
 </header>
+}
 
 <main class="page-content">
   <div class="container">
@@ -35,7 +37,7 @@
   </div>
 </main>
 
-<!-- Bottom Navigation for Mobile -->
+@if (!router.url.endsWith('/login')) {
 <nav class="mobile-nav mobile-only">
   <a routerLink="/dashboard" routerLinkActive="active">
     <span class="nav-icon">📊</span>
