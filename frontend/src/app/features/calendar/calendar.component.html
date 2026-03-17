@@ -11,7 +11,13 @@
   </header>
   
   <div class="calendar-glass-card">
-    <full-calendar [options]="calendarOptions"></full-calendar>
+    @if (calendarOptions$ | async; as options) {
+      <full-calendar [options]="options"></full-calendar>
+    } @else {
+      <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
+        Caricamento calendario...
+      </div>
+    }
   </div>
 
   <div class="legend">

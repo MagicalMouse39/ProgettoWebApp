@@ -6,7 +6,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
-import { BehaviorSubject, switchMap, map } from 'rxjs';
+import { BehaviorSubject, Observable, map, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-calendar',
@@ -21,7 +21,7 @@ export class CalendarComponent implements OnInit {
 
   private refresh$ = new BehaviorSubject<void>(undefined);
 
-  calendarOptions: CalendarOptions = {
+  private baseOptions: CalendarOptions = {
     plugins: [dayGridPlugin, interactionPlugin],
     initialView: 'dayGridMonth',
     locale: 'it',
@@ -45,14 +45,10 @@ export class CalendarComponent implements OnInit {
     stickyHeaderDates: true,
   };
 
-  ngOnInit() {
-    this.loadEvents();
-  }
-
-  loadEvents() {
-    this.refresh$.pipe(
-      switchMap(() => this.apiService.getEventsWithDetails()),
-      map(events => events.map(e => ({
+  calendarOptions$: Observable<CalendarOptions> = this.refresh$.pipe(
+    switchMap(() => this.apiService.getEventsWithDetails()),
+    map(events => {
+      const calendarEvents: EventInput[] = events.map(e => ({
         id: e.id,
         title: `${e.horses?.name}: ${e.event_type?.name}`,
         start: e.scheduled_date,
@@ -60,13 +56,25 @@ export class CalendarComponent implements OnInit {
         textColor: e.event_type?.color_hex,
         borderColor: 'transparent',
         extendedProps: { ...e }
-      })))
-    ).subscribe({
-      next: (calendarEvents) => {
-        this.calendarOptions = { ...this.calendarOptions, events: calendarEvents };
-      },
-      error: (err) => console.error('Errore caricamento calendario:', err)
-    });
+      }));
+
+      return {
+        ...this.baseOptions,
+        events: calendarEvents
+      };
+    })
+  );
+
+  ngOnInit() {
+    this.refreshData();
+  }
+
+  loadEvents() {
+    this.refreshData();
+  }
+
+  refreshData() {
+    this.refresh$.next();
   }
 
   handleEventClick(arg: any) {
