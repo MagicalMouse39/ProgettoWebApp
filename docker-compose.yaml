@@ -57,5 +57,13 @@ services:
     depends_on:
       - postgrest
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    environment:
+      - "TUNNEL_TOKEN=${CF_TUNNEL_TOKEN}"
+    command: "tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}"
+
 volumes:
   pg_data:
