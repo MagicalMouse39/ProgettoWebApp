@@ -8,6 +8,7 @@ Il sistema si basa su un'architettura a tre livelli (Three-Tier Architecture) co
 
 *   **Livello Database**: PostgreSQL 16+.
 *   **Livello API (Backend)**: PostgREST (Middleware per l'esposizione automatica di REST API).
+*   **Documentazione**: Swagger UI (Interfaccia interattiva per l'esplorazione delle API).
 *   **Livello Presentazione (Frontend)**: Angular 19+ (Standalone Components, RxJS, TypeScript).
 *   **Infrastruttura**: Nginx (Reverse Proxy), Docker Compose.
 
@@ -34,6 +35,14 @@ A differenza dei backend tradizionali, HorseCare utilizza **PostgREST**. Questa 
 3.  **Sicurezza**: La logica di autorizzazione è delegata al sistema di permessi (RBAC) nativo di PostgreSQL.
 
 L'accesso alle API è mediato da un **Reverse Proxy Nginx**, che instrada le chiamate sulla porta `80/api` verso il servizio interno, garantendo un'unica origine per il frontend.
+
+### 4.1 Documentazione Interattiva (Swagger UI)
+Per facilitare lo sviluppo e l'integrazione, il sistema include **Swagger UI**. Questo strumento interpreta automaticamente le specifiche OpenAPI generate dinamicamente da PostgREST, fornendo:
+*   **Esplorazione visiva**: Elenco completo di tutti gli endpoint (tabelle e funzioni RPC).
+*   **Test in tempo reale**: Possibilità di eseguire query `GET`, `POST`, `PATCH` e `DELETE` direttamente dal browser.
+*   **Schema dei dati**: Visualizzazione dei tipi di dato e dei vincoli di ogni risorsa.
+
+L'interfaccia è accessibile in ambiente di sviluppo alla porta `8081`.
 
 ## 5. Architettura Frontend (Presentation Layer)
 Il frontend è sviluppato in Angular, seguendo i più recenti standard di modularità e reattività.
