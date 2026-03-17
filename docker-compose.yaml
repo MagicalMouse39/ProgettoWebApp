@@ -49,7 +49,7 @@ services:
       API_URL: http://localhost:3000/
 
   frontend:
-    image: progetto-webapp-frontend
+    image: horsecare/frontend
     build:
       context: frontend
     restart: always
