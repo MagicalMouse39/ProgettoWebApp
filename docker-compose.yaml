@@ -41,7 +41,7 @@ services:
       PGRST_OPENAPI_SERVER_PROXY_URI: http://127.0.0.1:3000
       PGRST_OPENAPI_MODE: ignore-privileges
       PGRST_DB_ANON_ROLE: anon
-      PGRST_JWT_SECRET: "${PGRST_JWT_SECRET}"
+      PGRST_JWT_SECRET: "${PGRST_JWT_SECRET:-TOKEN}"
     depends_on:
       database:
         condition: service_healthy
