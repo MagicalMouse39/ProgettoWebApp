@@ -19,6 +19,10 @@ services:
       POSTGRES_USER: ${PG_USER:-admin}
       POSTGRES_PASSWORD: ${PG_PASS:-password}
       POSTGRES_DB: ${PG_DB:-horsecare}
+    command:
+      - "postgres"
+      - "-c"
+      - "auth.token=${PGRST_JWT_SECRET:-TOKEN}"
     healthcheck:
       test: [ "CMD", "pg_isready", "-q", "-d", "${PG_DB:-horsecare}", "-U", "${PG_USER:-admin}" ]
       interval: 5s

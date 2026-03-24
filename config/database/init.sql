@@ -103,12 +103,19 @@ CREATE OR REPLACE FUNCTION login(email text, password text) RETURNS jwt_token AS
 DECLARE
   _user auth.users;
   _token text;
+  _secret text;
   result jwt_token;
 BEGIN
   SELECT * INTO _user FROM auth.users WHERE auth.users.email = login.email;
 
   IF _user.id IS NULL OR crypt(login.password, _user.password_hash) <> _user.password_hash THEN
     RAISE EXCEPTION 'Credenziali non valide';
+  END IF;
+
+  _secret := current_setting('auth.token', true);
+
+  IF _secret IS NULL OR _secret = '' THEN
+    RAISE EXCEPTION 'Errore di configurazione del server: auth.token mancante.';
   END IF;
 
   SELECT sign(
@@ -118,7 +125,7 @@ BEGIN
         'email', _user.email,
         'exp', extract(epoch from now())::integer + 60*60*24*365
       ), 
-      '<REDACTED>'
+      _secret
   ) INTO _token;
 
   result.token := _token;
