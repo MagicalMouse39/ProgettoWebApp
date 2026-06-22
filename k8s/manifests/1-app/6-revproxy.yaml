@@ -15,6 +15,11 @@ data:
       server frontend:80;
     }
 
+    # Swagger upstream
+    upstream swagger {
+      server swagger:8080;
+    }
+
     server {
       server_name localhost;
       access_log /var/log/nginx/access.log;
@@ -30,6 +35,13 @@ data:
         proxy_set_header Connection "";
         proxy_http_version 1.1;
         proxy_pass http://api/;
+      }
+
+      location /swagger/ {
+        proxy_pass http://swagger/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       }
 
       location / {

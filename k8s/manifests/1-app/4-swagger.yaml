@@ -36,7 +36,7 @@ spec:
           name: http
         env:
         - name: API_URL
-          value: http://localhost:30080/api/
+          value: https://horsecare.sawherd.com/api/
         livenessProbe:
           httpGet:
             path: /
