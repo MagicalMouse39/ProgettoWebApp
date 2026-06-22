@@ -1,0 +1,189 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+
+\definecolor{darkslate}{RGB}{30, 41, 59}
+\definecolor{teal}{RGB}{13, 148, 136}
+\definecolor{lightgray}{RGB}{241, 245, 249}
+
+\setbeamercolor{palette primary}{bg=darkslate, fg=white}
+\setbeamercolor{palette secondary}{bg=teal, fg=white}
+\setbeamercolor{palette tertiary}{bg=darkslate, fg=white}
+\setbeamercolor{palette quaternary}{bg=teal, fg=white}
+\setbeamercolor{structure}{fg=teal}
+\setbeamercolor{background canvas}{bg=white}
+\setbeamercolor{titlelike}{parent=palette primary}
+
+\setbeamercolor{block title}{bg=teal, fg=white}
+\setbeamercolor{block body}{bg=lightgray, fg=darkslate}
+
+\title[HorseCare]{Progetto HorseCare}
+\subtitle{Dall'Architettura al Rilascio su Kubernetes e Cloudflare}
+\author{Antonio Sgalla}
+\institute{Università degli Studi di Camerino}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}{Indice dei Contenuti}
+    \tableofcontents
+\end{frame}
+
+\section{Infrastruttura di Virtualizzazione (On-Premise)}
+
+\begin{frame}{Infrastruttura Cloud Privata: Proxmox VE e Debian 13}
+    L'intero cluster Kubernetes è ospitato su un'infrastruttura di virtualizzazione dedicata (On-Premise).
+    \begin{itemize}
+        \item \textbf{Host Bare-Metal}: Server fisico basato sul software di virtualizzazione open-source \textbf{Proxmox VE (PVE)}.
+        \item \textbf{Cluster K8s a 3 Nodi}: Tre macchine virtuali distinte (\texttt{node-1}, \texttt{node-2}, \texttt{node-3}) rispettivamente master, worker e worker, configurate per ripartire il carico di lavoro:
+            \begin{itemize}
+                \item Distribuzione Linux di base uniforme: \textbf{Debian 13 (Trixie)}.
+                \item Risorse allocate per nodo per garantire la fluidità di PostgreSQL e Longhorn.
+            \end{itemize}
+        \item \textbf{Automazione del Provisioning}: L'inizializzazione del sistema operativo, la gestione dei pacchetti e la configurazione dei prerequisiti di rete sono state interamente automatizzate tramite \textbf{script bash personalizzati} (\texttt{common.sh}).
+    \end{itemize}
+    \begin{block}{Rilevanza Architetturale}
+        L'architettura a 3 nodi attuale non garantisce HA, ma ampliando questo setup è possibile garantirla.
+    \end{block}
+\end{frame}
+
+\section{Architettura e Stack Tecnologico}
+
+\begin{frame}{Stack Tecnologico (API-First)}
+    \begin{itemize}
+        \item \textbf{Data Layer}: PostgreSQL 16+ per memorizzazione sicura e integrità referenziale.
+        \item \textbf{Backend & API}: PostgREST per la generazione dinamica di REST API direttamente dal database.
+        \item \textbf{Documentazione}: Swagger UI integrato per il testing in tempo reale.
+        \item \textbf{Presentation Layer}: Angular 19+ (Standalone Components, RxJS, TypeScript).
+        \item \textbf{Infrastruttura locale}: Nginx come Reverse Proxy e Docker Compose per lo sviluppo locale.
+    \end{itemize}
+    \begin{block}{Scelta Progettuale}
+        L'architettura API-first disaccoppia completamente lo strato di presentazione (client) da quello dei dati, abilitando scalabilità e sviluppo parallelo.
+    \end{block}
+\end{frame}
+
+\begin{frame}{Data Layer: PostgreSQL}
+    \begin{itemize}
+        \item \textbf{Schema Relazionale}: Gestione tabelle utenti (`auth.users`), scuderie (`stables`), cavalli (`horses`), ed eventi pianificati (`events`).
+        \item \textbf{Identificativi UUID}: Utilizzo di UUID per garantire l'unicità ed evitare conflitti in caso di future migrazioni.
+        \item \textbf{Row Level Security (RLS)}: I dati sono protetti a livello di database; gli utenti vedono solo le scuderie e i cavalli associati al proprio ID.
+        \item \textbf{Automazione}: Trigger PL/pgSQL che aggiornano automaticamente i campi di tracciamento temporale (`updated\_at`).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Strato API: PostgREST e Swagger}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \textbf{PostgREST}
+            \begin{itemize}
+                \item Legge direttamente il catalogo del database.
+                \item Traduce le richieste HTTP in interrogazioni SQL altamente ottimizzate.
+                \item Gestisce l'autenticazione tramite token JWT emessi durante il login/signup.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \textbf{Swagger UI}
+            \begin{itemize}
+                \item Genera interattivamente la documentazione dell'API leggendo le specifiche OpenAPI da PostgREST.
+                \item Consente agli sviluppatori di testare in sicurezza le query direttamente da browser.
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Presentation Layer: Angular}
+    \begin{itemize}
+        \item \textbf{Componenti Standalone}: Struttura dell'applicazione Angular snella, priva di moduli pesanti.
+        \item \textbf{Design Glassmorphism}: Interfaccia elegante con effetti sfocati (`backdrop-filter`), ombreggiature morbide e font premium.
+        \item \textbf{Mobile-Adaptive}: Progettato con una Bottom Navigation Bar su schermi piccoli (target mobile-first per uso in scuderia) e sidebar classica su schermi desktop.
+        \item \textbf{Lazy Loading}: Caricamento asincrono dei moduli (Dashboard, Calendario, Anagrafica) per performance elevate.
+    \end{itemize}
+\end{frame}
+
+\section{Containerizzazione e Sviluppo Locale}
+
+\begin{frame}{Docker Compose per lo Sviluppo Locale}
+    \begin{itemize}
+        \item \textbf{Servizi Containerizzati}:
+            \begin{itemize}
+                \item \texttt{database} (PostgreSQL) con volume persistente locale.
+                \item \texttt{postgrest} (Backend API).
+                \item \texttt{frontend} (Angular distribuito via Nginx locale).
+                \item \texttt{revproxy} (Nginx principale per esporre la porta \texttt{80} e gestire il routing di \texttt{/api/}).
+                \item \texttt{swagger} (Documentazione esposta sulla porta \texttt{8081}).
+            \end{itemize}
+        \item \textbf{Variabili d'ambiente}: Gestione centralizzata dei dati sensibili e dei parametri di avvio tramite file \texttt{.env}.
+    \end{itemize}
+\end{frame}
+
+\section{Deployment in Kubernetes (K8s)}
+
+\begin{frame}{Kubernetes: Alta Disponibilità e Storage con Longhorn}
+    La migrazione del cluster a Kubernetes assicura scalabilità orizzontale e auto-healing.
+    \begin{block}{Persistenza con Longhorn}
+        Il database PostgreSQL richiede uno storage persistente ad alte prestazioni. Viene utilizzato \textbf{Longhorn} come CSI (Container Storage Interface):
+        \begin{itemize}
+            \item Storage distribuito e resiliente all'interno del cluster.
+            \item Provisioning dinamico dei volumi tramite la StorageClass \texttt{longhorn}.
+            \item StatefulSet per garantire la persistenza stagna e l'identità del pod database.
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Ordinamento dei Manifesti Kubernetes}
+    I manifesti in \texttt{k8s/manifests/} sono organizzati alfabeticamente tramite numerazione per un'applicazione fluida in due macro-fasi:
+    
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \textbf{Fase 1: Storage (\texttt{0-storage/})}
+            \begin{itemize}
+                \item \texttt{longhorn.yaml}
+            \end{itemize}
+            \textbf{Fase 2: Applicazione (\texttt{1-app/})}
+            \begin{itemize}
+                \item \texttt{0-namespace.yaml}
+                \item \texttt{1-secrets.yaml}
+                \item \texttt{2-database.yaml}
+                \item \texttt{3-postgrest.yaml}
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{itemize}
+                \item \texttt{4-swagger.yaml}
+                \item \texttt{5-frontend.yaml}
+                \item \texttt{6-revproxy.yaml}
+                \item \texttt{7-ingress.yaml}
+                \item \texttt{8-cloudflare-tunnel.yaml}
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\section{Esposizione e Pubblicazione}
+
+\begin{frame}{Pubblicazione via Cloudflare Tunnel}
+    Per esporre l'applicazione su internet in sicurezza, si evita il Port Forwarding classico a favore di un \textbf{Cloudflare Tunnel}.
+    \begin{itemize}
+        \item \textbf{Funzionamento}: Il pod \texttt{cloudflared} all'interno di Kubernetes stabilisce una connessione sicura in uscita verso i server di Cloudflare.
+        \item \textbf{Sicurezza}: Nessuna porta aperta sul firewall di rete locale. Protezione nativa DDoS e TLS automatica.
+        \item \textbf{Routing Interno}: Il tunnel instrada il traffico del dominio pubblico \texttt{horsecare.sawherd.com} direttamente al servizio interno \texttt{revproxy:80} nel cluster.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Conclusioni e Sviluppi Futuri}
+    \begin{block}{Risultati Ottenuti}
+        L'applicazione è completamente containerizzata, distribuita in alta disponibilità con storage distribuito (Longhorn), e resa accessibile via web in modo sicuro (Cloudflare Tunnel).
+    \end{block}
+    \textbf{Evoluzioni Future:}
+    \begin{itemize}
+        \item Ampliare e distribuire il cluster k8s per ottenere HA e DR (cluster ibrido?).
+        \item Implementazione di un operatore database avanzato (es. CloudNativePG) per repliche e backup WAL (Azure Flexible PG?).
+        \item Abilitazione di logiche multi-scuderia (Multi-Tenancy) a livello di record.
+        \item Sviluppo di logiche di sincro offline (Offline-First) per l'uso senza connettività di rete.
+    \end{itemize}
+\end{frame}
+
+\end{document}
